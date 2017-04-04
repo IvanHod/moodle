@@ -30,9 +30,10 @@ require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 require_once($CFG->dirroot . '/mod/quiz/report/reportlib.php');
 
-$attemptid = required_param('attempt', PARAM_INT);
-$page      = optional_param('page', 0, PARAM_INT);
-$showall   = optional_param('showall', null, PARAM_BOOL);
+$attemptid      = required_param('attempt', PARAM_INT);
+$page           = optional_param('page', 0, PARAM_INT);
+$showall        = optional_param('showall', null, PARAM_BOOL);
+$attemptstate   = optional_param('attemptstate', 0, PARAM_INT);
 
 $url = new moodle_url('/mod/quiz/review.php', array('attempt'=>$attemptid));
 if ($page !== 0) {
@@ -59,7 +60,7 @@ $attemptobj->check_review_capability();
 $accessmanager = $attemptobj->get_access_manager(time());
 $accessmanager->setup_attempt_page($PAGE);
 
-$options = $attemptobj->get_display_options(true);
+$options = $attemptobj->get_display_options(true, $attemptstate);
 
 // Check permissions - warning there is similar code in reviewquestion.php and
 // quiz_attempt::check_file_access. If you change on, change them all.
@@ -236,6 +237,23 @@ if ($options->overallfeedback && $feedback) {
     $summarydata['feedback'] = array(
         'title'   => get_string('feedback', 'quiz'),
         'content' => $feedback,
+    );
+}
+
+// It is because this is only for teacher previews and not for looking
+// at what students have done.
+if ($attemptobj->has_capability('mod/quiz:viewreports') && $attemptobj->is_own_attempt()) {
+    $attemptstates = array(
+        mod_quiz_display_options::DURING => get_string('stateinprogress', 'quiz'),
+        mod_quiz_display_options::IMMEDIATELY_AFTER => get_string('stateoverdue', 'quiz'),
+        mod_quiz_display_options::LATER_WHILE_OPEN => get_string('statefinished', 'quiz'),
+        mod_quiz_display_options::AFTER_CLOSE => get_string('stateabandoned', 'quiz'),
+    );
+
+    $select = new single_select($url, 'attemptstate', $attemptstates, $attemptstate);
+    $summarydata['attemptstate'] = array(
+        'title'     => get_string('reviewoptionsheading', 'quiz'),
+        'content'   => $select,
     );
 }
 

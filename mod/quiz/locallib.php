@@ -1384,12 +1384,16 @@ function quiz_attempt_state($quiz, $attempt) {
  *
  * @param object $quiz the quiz instance.
  * @param object $attempt the attempt in question.
- * @param $context the quiz context.
+ * @param object $context the quiz context.
+ * @param int $attemptstate selected state of attempt.
  *
  * @return mod_quiz_display_options
  */
-function quiz_get_review_options($quiz, $attempt, $context) {
-    $options = mod_quiz_display_options::make_from_quiz($quiz, quiz_attempt_state($quiz, $attempt));
+function quiz_get_review_options($quiz, $attempt, $context, $attemptstate = 0) {
+    if ($attemptstate === 0) {
+        $attemptstate = quiz_attempt_state($quiz, $attempt);
+    }
+    $options = mod_quiz_display_options::make_from_quiz($quiz, $attemptstate);
 
     $options->readonly = true;
     $options->flags = quiz_get_flag_option($attempt, $context);

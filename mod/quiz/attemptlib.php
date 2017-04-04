@@ -992,13 +992,16 @@ class quiz_attempt {
      * Wrapper that the correct mod_quiz_display_options for this quiz at the
      * moment.
      *
+     * @param bool $reviewing attempt is under review.
+     * @param int $attemptstate selected state of attempt.
+     *
      * @return question_display_options the render options for this user on this attempt.
      */
-    public function get_display_options($reviewing) {
+    public function get_display_options($reviewing, $attemptstate = 0) {
         if ($reviewing) {
             if (is_null($this->reviewoptions)) {
                 $this->reviewoptions = quiz_get_review_options($this->get_quiz(),
-                        $this->attempt, $this->quizobj->get_context());
+                        $this->attempt, $this->quizobj->get_context(), $attemptstate);
                 if ($this->is_own_preview()) {
                     // It should  always be possible for a teacher to review their
                     // own preview irrespective of the review options settings.
